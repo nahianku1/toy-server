@@ -1,14 +1,39 @@
 let express = require("express");
 let cors = require("cors");
-let dotenv = require("dotenv").config();
+let dotenv = require("dotenv");
 let app = express();
+dotenv.config();
 
 let PORT = process.env.PORT || 5000;
+
+const { MongoClient, ServerApiVersion } = require("mongodb");
+
+const uri = process.env.DB_URL;
+// Create a MongoClient with a MongoClientOptions object to set the Stable API version
+const client = new MongoClient(uri, {
+  serverApi: {
+    version: ServerApiVersion.v1,
+    strict: true,
+    deprecationErrors: true,
+  },
+});
+
 app.use(cors());
 
-app.get('/',(req,res)=>{
-    res.send(`Welcome to Server`)
-})
-app.listen(PORT,()=>{
-    console.log(`server is running at http://localhost:${PORT}`);
+app.get("/", async (req, res) => {
+  await client.connect();
+  let result = await client
+    .db("edufundb")
+    .collection("tabcollection")
+    .find()
+    .toArray();
+  if (result) {
+    res.send(result);
+    await client.close();
+  } else {
+    res.send(`Failed to fetch`);
+  }
+});
+app.listen(PORT, () => {
+  console.log(`server is running at http://localhost:${PORT}`);
 });
