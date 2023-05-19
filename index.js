@@ -20,7 +20,7 @@ const client = new MongoClient(uri, {
 
 app.use(cors());
 
-app.get("/", async (req, res) => {
+app.get("/tab-details", async (req, res) => {
   await client.connect();
   let result = await client
     .db("edufundb")
@@ -28,8 +28,8 @@ app.get("/", async (req, res) => {
     .find()
     .toArray();
   if (result) {
-    res.send(result);
-    await client.close();
+    res.send(result)
+    await client.close()
   } else {
     res.send(`Failed to fetch`);
   }
