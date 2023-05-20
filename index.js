@@ -89,20 +89,33 @@ app.put("/my-toys-update/:id", async (req, res) => {
   let result = await client
     .db("edufundb")
     .collection("alltoys")
-    .updateOne(
-      filter,
-      {
-        $set: { ...req.body },
-      },
-      
-    );
+    .updateOne(filter, {
+      $set: { ...req.body },
+    });
 
   if (result) {
     res.send(result);
     console.log(result);
     await client.close();
   } else {
-    res.send(`Failed to Save`);
+    res.send(`Failed to Update`);
+  }
+});
+app.delete("/my-toys-delete/:id", async (req, res) => {
+  console.log(req.params.id);
+  let filter = { _id: new ObjectId(req.params.id) };
+  await client.connect();
+  let result = await client
+    .db("edufundb")
+    .collection("alltoys")
+    .deleteOne(filter);
+
+  if (result) {
+    res.send(result);
+    console.log(result);
+    await client.close();
+  } else {
+    res.send(`Failed to Delete`);
   }
 });
 
