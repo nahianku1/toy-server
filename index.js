@@ -18,6 +18,7 @@ const client = new MongoClient(uri, {
   },
 });
 
+app.use(express.json());
 app.use(cors());
 
 app.get("/tab-details", async (req, res) => {
@@ -28,10 +29,29 @@ app.get("/tab-details", async (req, res) => {
     .find()
     .toArray();
   if (result) {
-    res.send(result)
-    await client.close()
+    res.send(result);
+    await client.close();
   } else {
     res.send(`Failed to fetch`);
+  }
+});
+
+app.post("/add-toy", async (req, res) => {
+  console.log(req.body);
+  await client.connect();
+  let result = await client
+    .db("edufundb")
+    .collection("alltoys")
+    .insertOne({
+      ...req.body,
+    });
+
+  if (result) {
+    res.send(result);
+    console.log(result);
+    await client.close();
+  } else {
+    res.send(`Failed to Save`);
   }
 });
 app.listen(PORT, () => {
