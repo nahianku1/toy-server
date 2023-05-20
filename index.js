@@ -6,7 +6,7 @@ dotenv.config();
 
 let PORT = process.env.PORT || 5000;
 
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 
 const uri = process.env.DB_URL;
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -80,6 +80,32 @@ app.post("/add-toy", async (req, res) => {
     res.send(`Failed to Save`);
   }
 });
+
+app.put("/my-toys-update/:id", async (req, res) => {
+  console.log(req.params.id);
+  console.log(req.body);
+  let filter = { _id: new ObjectId(req.params.id) };
+  await client.connect();
+  let result = await client
+    .db("edufundb")
+    .collection("alltoys")
+    .updateOne(
+      filter,
+      {
+        $set: { ...req.body },
+      },
+      
+    );
+
+  if (result) {
+    res.send(result);
+    console.log(result);
+    await client.close();
+  } else {
+    res.send(`Failed to Save`);
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`server is running at http://localhost:${PORT}`);
 });
