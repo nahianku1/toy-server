@@ -35,6 +35,32 @@ app.get("/tab-details", async (req, res) => {
     res.send(`Failed to fetch`);
   }
 });
+app.get("/my-toys", async (req, res) => {
+  try {
+    if (req.query.email !== "undefined") {
+      console.log(req.query);
+      await client.connect();
+      let result = await client
+        .db("edufundb")
+        .collection("alltoys")
+        .find({
+          selleremail: req.query.email,
+        })
+        .toArray();
+      if (result) {
+        if (result.length > 0) {
+          res.send(result);
+          console.log(51, result);
+        } else {
+          res.send(["No item found"]);
+        }
+        await client.close();
+      }
+    }
+  } catch (e) {
+    res.send(`Failed to fetch`);
+  }
+});
 
 app.post("/add-toy", async (req, res) => {
   console.log(req.body);
