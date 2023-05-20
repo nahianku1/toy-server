@@ -119,6 +119,36 @@ app.delete("/my-toys-delete/:id", async (req, res) => {
   }
 });
 
+app.get("/all-toys", async (req, res) => {
+  let page = Number(req.query.page);
+  let limit = Number(req.query.itemPerPage);
+  let skip = (page - 1) * limit;
+  console.log({ page, limit });
+  try {
+    await client.connect();
+    let result = await client
+      .db("edufundb")
+      .collection("alltoys")
+      .find()
+      .skip(skip)
+      .limit(limit)
+      .toArray();
+    let totalrecord = await client
+      .db("edufundb")
+      .collection("alltoys")
+      .estimatedDocumentCount();
+    let totalPage = Math.ceil(totalrecord / limit);
+    if (result.length > 0) {
+      res.send({ result, totalPage });
+    } else {
+      res.send({ msg: "No item found!" });
+    }
+    await client.close();
+  } catch (e) {
+    console.log(e.message);
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`server is running at http://localhost:${PORT}`);
 });
