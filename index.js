@@ -52,7 +52,7 @@ app.get("/my-toys", async (req, res) => {
           res.send(result);
           console.log(51, result);
         } else {
-          res.send(["No item found"]);
+          res.send({ msg: "No item found" });
         }
         await client.close();
       }
@@ -62,14 +62,88 @@ app.get("/my-toys", async (req, res) => {
   }
 });
 
+app.get("/sorted-toys", async (req, res) => {
+  console.log(req.query);
+  try {
+    if (req.query.sort === "-1") {
+      console.log(`entered`);
+      await client.connect();
+      let result = await client
+        .db("edufundb")
+        .collection("alltoys")
+        .find({ selleremail: req.query.email })
+        .sort({
+          price: -1,
+        })
+        .toArray();
+
+      if (result) {
+        if (result.length > 0) {
+          res.send(result);
+          console.log(83, result);
+        } else {
+          res.send({ msg: "Not Found" });
+        }
+        await client.close();
+      }
+    } else {
+      console.log(`second entered`);
+      await client.connect();
+      let result = await client
+        .db("edufundb")
+        .collection("alltoys")
+        .find({ selleremail: req.query.email })
+        .toArray();
+
+      if (result) {
+        if (result.length > 0) {
+          res.send(result);
+          console.log(102, result);
+        } else {
+          res.send({ msg: "Not Found" });
+        }
+        await client.close();
+      }
+    }
+  } catch (e) {
+    res.send(e);
+  }
+});
+
+app.get("/single-toy/:id", async (req, res) => {
+  console.log(req.params);
+  try{
+  await client.connect();
+  let result = await client
+    .db("edufundb")
+    .collection("alltoys")
+    .findOne({
+      _id:new ObjectId(req.params.id)
+    })
+
+  if (result) {
+    res.send(result);
+    console.log(result);
+    await client.close();
+  } else {
+    res.send(`Failed to Save`);
+  }}catch(e){
+    res.send(e)
+  }
+});
+
+
 app.post("/add-toy", async (req, res) => {
   console.log(req.body);
+  let { price } = req.body;
+  let convertedPrice = Number(price);
   await client.connect();
   let result = await client
     .db("edufundb")
     .collection("alltoys")
     .insertOne({
       ...req.body,
+      price: convertedPrice,
     });
 
   if (result) {
