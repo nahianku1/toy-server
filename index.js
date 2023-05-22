@@ -4,6 +4,14 @@ let dotenv = require("dotenv");
 let app = express();
 dotenv.config();
 
+app.use(express.json());
+app.use(
+  cors({
+    origin: "*",
+    methods: ["GET", "PUT", "POST", "DELETE", "PATCH"],
+  })
+);
+
 let PORT = process.env.PORT || 5000;
 
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
@@ -18,8 +26,9 @@ const client = new MongoClient(uri, {
   },
 });
 
-app.use(express.json());
-app.use(cors());
+app.get("/", async (req, res) => {
+  res.send(`Server is running!`);
+});
 
 app.get("/tab-details", async (req, res) => {
   await client.connect();
@@ -112,26 +121,26 @@ app.get("/sorted-toys", async (req, res) => {
 
 app.get("/single-toy/:id", async (req, res) => {
   console.log(req.params);
-  try{
-  await client.connect();
-  let result = await client
-    .db("edufundb")
-    .collection("alltoys")
-    .findOne({
-      _id:new ObjectId(req.params.id)
-    })
+  try {
+    await client.connect();
+    let result = await client
+      .db("edufundb")
+      .collection("alltoys")
+      .findOne({
+        _id: new ObjectId(req.params.id),
+      });
 
-  if (result) {
-    res.send(result);
-    console.log(result);
-    await client.close();
-  } else {
-    res.send(`Failed to Save`);
-  }}catch(e){
-    res.send(e)
+    if (result) {
+      res.send(result);
+      console.log(result);
+      await client.close();
+    } else {
+      res.send(`Failed to Save`);
+    }
+  } catch (e) {
+    res.send(e);
   }
 });
-
 
 app.post("/add-toy", async (req, res) => {
   console.log(req.body);
